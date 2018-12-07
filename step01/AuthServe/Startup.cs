@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using AuthServe.Configuration;
 using Microsoft.AspNetCore.Builder;
@@ -17,11 +19,13 @@ namespace AuthServe
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddIdentityServer()
-                .AddDeveloperSigningCredential()
+                //.AddDeveloperSigningCredential()
+                .AddSigningCredential(new X509Certificate2(Path.Combine(AppContext.BaseDirectory, "socialnetwork.pfx"), "12345678"))
                 .AddTestUsers(InMemoryConfiguration.Users().ToList())
                 .AddInMemoryClients(InMemoryConfiguration.Clients())
                 .AddInMemoryApiResources(InMemoryConfiguration.ApiResources())
                 ;
+            services.AddMvc();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -32,11 +36,12 @@ namespace AuthServe
                 app.UseDeveloperExceptionPage();
             }
             app.UseIdentityServer();
-
-            app.Run(async (context) =>
-            {
-                await context.Response.WriteAsync("Hello World!");
-            });
+            app.UseStaticFiles();
+            app.UseMvcWithDefaultRoute();
+            //app.Run(async (context) =>
+            //{
+            //    await context.Response.WriteAsync("Hello World!");
+            //});
         }
     }
 }
